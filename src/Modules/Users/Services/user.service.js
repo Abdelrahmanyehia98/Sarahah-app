@@ -198,3 +198,19 @@ export const RefreshTokenService = async(req,res)=>{
     return res.status(200).json({ message: "User Token refreshed successfully", accesstoken })
 
 }
+
+export const updatePasswordServices = async(req,res)=>{
+    const {oldPassword,newPassword} = req.body;
+    const { user} = req.loggedInUser;
+
+    const dbUser = await User.findById(user._id);
+    const isPasswordMatch = compareSync(oldPassword,dbUser.password)
+    if(!isPasswordMatch) {
+        return res.status(404).json({ message: "User not found" });
+    }
+    dbUser.password = hashSync(newPassword, +process.env.SALT_ROUNDS);
+    await dbUser.save();
+
+    return res.status(200).json({ message: "Password updated successfully" });
+
+}

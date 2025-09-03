@@ -12,6 +12,7 @@ userRouter.put("/update", authenticationMiddleware , userServices.updateAccountS
 userRouter.delete("/delete", authenticationMiddleware ,userServices.deleteAccountService);
 userRouter.get("/list", userServices.listUsersService);
 userRouter.post("/refresh", userServices.RefreshTokenService)
+userRouter.put("/updatePassword", authenticationMiddleware , userServices.updatePasswordServices);
 
 export default userRouter;
 
