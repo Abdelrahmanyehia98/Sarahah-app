@@ -78,10 +78,6 @@ const userSchema = new mongoose.Schema(
             console.log(`Hi ${this.fullname}`);
         }
     },
-    capped: {
-        size: 1024,
-        max: 100
-    },
     collection: "users"
 });
 
