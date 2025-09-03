@@ -16,10 +16,10 @@ export const authenticationMiddleware = async (req, res, next) => {
     if (blackListedToken) {
         return res.status(401).json({ message: "Token is blacklisted" });
     }
-    const user = await User.findById(decodedData._Id)
+    const user = await User.findById(decodedData?._id, '-password').lean();
     if (!user) {
         return res.status(400).json({ message: "User not found" })
     }
-    req.loggedInUser = user
+    req.loggedInUser = {user, token:{tokenId:decodedData.jti, expirationDate:decodedData.exp}}
     next()
 }   

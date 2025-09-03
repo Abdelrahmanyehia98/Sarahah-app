@@ -1,17 +1,18 @@
 import { Router } from "express";
 import * as userServices from "./Services/user.service.js";
 import { authenticationMiddleware } from "../../Middlewares/authentication.middleware.js";
-const router = Router();
+const userRouter = Router();
 
 
-router.post("/signup", userServices.signUpService);
-router.post("/signin", userServices.signinService);
-router.post("/logout",authenticationMiddleware, userServices.LogoutService);
-router.put("/update", authenticationMiddleware , userServices.updateAccountService);
-router.delete("/delete", authenticationMiddleware ,userServices.deleteAccountService);
-router.get("/list", userServices.listUsersService);
-router.put("/confirm", userServices.confirmEmailService)
+userRouter.post("/signup", userServices.signUpService);
+userRouter.put("/confirm", userServices.confirmEmailService)
+userRouter.post("/signin", userServices.signinService);
+userRouter.post("/logout",authenticationMiddleware, userServices.LogoutService);
+userRouter.put("/update", authenticationMiddleware , userServices.updateAccountService);
+userRouter.delete("/delete", authenticationMiddleware ,userServices.deleteAccountService);
+userRouter.get("/list", userServices.listUsersService);
+userRouter.post("/refresh", userServices.RefreshTokenService)
 
-export default router;
+export default userRouter;
 
 

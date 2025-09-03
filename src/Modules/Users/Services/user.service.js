@@ -97,7 +97,7 @@ export const signinService = async (req, res) => {
     }
 
     const accesstoken = generateToken(
-        { _Id: user._id, email: user.email },
+        { _id: user._id, email: user.email },
         process.env.JWT_ACCESS_SECRET,
         {
             // issuer: 'https://localhost:3000',
@@ -106,24 +106,42 @@ export const signinService = async (req, res) => {
             jwtid: uuidv4()
         }
     )
-    return res.status(200).json({ message: "User signed in successfully", accesstoken })
+    const refreshtoken = generateToken(
+        { _id: user._id, email: user.email },
+        process.env.JWT_REFRESH_SECRET,
+        {
+            // issuer: 'https://localhost:3000',
+            // audience: 'https://localhost:4000',
+            expiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
+            jwtid: uuidv4()
+        }
+
+    )
+    return res.status(200).json({ message: "User signed in successfully", accesstoken,refreshtoken })
 }
 
 
 export const updateAccountService = async (req, res) => {
+    const { _id } = req.loggedInUser.user;
+    const { firstname, lastname, email, age, gender, phoneNumber } = req.body;
 
-    const { _id } = req.loggedInUser
-    const { firstname, lastname, email, age, gender } = req.body
+    const updateData = { firstname, lastname, email, age, gender };
+
+    if (phoneNumber) {
+        updateData.phoneNumber = assymetricEncryption(phoneNumber);
+    }
 
     const user = await User.findByIdAndUpdate(
         _id,
-        { firstname, lastname, email, age, gender },
+        updateData,
         { new: true }
-    )
+    );
+
     if (!user) {
         return res.status(404).json({ message: "User not found" });
     }
-    return res.status(200).json({ message: "User updated successfully" })
+
+    return res.status(200).json({ message: "User updated successfully", user });
 }
 
 
@@ -154,18 +172,29 @@ export const listUsersService = async (req, res) => {
 
 
 export const LogoutService = async (req, res) => {
- const { jti, exp } = req.loggedInUser;
-
-    if (!exp) {
-      return res.status(400).json({ message: "Token missing expiration date" });
-    }
-
-    const expirationDate = new Date(exp * 1000);
+  const { token: { tokenId, expirationDate }, user: { _id } } = req.loggedInUser
 
     await BlackListedTokens.create({
-      token: jti,   
-      expirationDate
-    });
+        tokenId,
+        expirationDate: new Date(expirationDate * 1000),
+        userId: _id
+    })
 
-    return res.status(200).json({ message: "User logged out successfully" });
+    return res.status(200).json({ message: "User logged out successfully" })
  }
+
+export const RefreshTokenService = async(req,res)=>{
+    const {refreshtoken} = req.headers
+
+    const decodedData = verifyToken(refreshtoken, process.env.JWT_REFRESH_SECRET)
+    const accesstoken = generateToken(
+        { _id: decodedData._id, email: decodedData.email },
+        process.env.JWT_ACCESS_SECRET,
+        {
+            expiresIn: process.env.JWT_ACCESS_EXPIRES_IN,
+            jwtid: uuidv4()
+        }
+    )
+    return res.status(200).json({ message: "User Token refreshed successfully", accesstoken })
+
+}

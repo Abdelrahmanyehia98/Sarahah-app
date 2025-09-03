@@ -1,11 +1,8 @@
 import mongoose from "mongoose";
 
-
-
-
 const blackListedTokensSchema = new mongoose.Schema({
 
-    token: { type: String, required: true, unique: true },
+    tokenId: { type: String, required: true, unique: true },
     expirationDate: { type: Date, required: true }
 })
 
